@@ -3,73 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import './LoginPage.css'
 
-interface ValidationErrors {
-  username?: string
-  password?: string
-}
-
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({})
   const { login } = useAuth()
   const navigate = useNavigate()
-
-  // Validation function
-  const validateForm = (): boolean => {
-    const errors: ValidationErrors = {}
-
-    // Username validation
-    if (!username.trim()) {
-      errors.username = 'Username is required'
-    } else if (username.length < 3) {
-      errors.username = 'Username must be at least 3 characters'
-    } else if (username.length > 50) {
-      errors.username = 'Username must be less than 50 characters'
-    } else if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      errors.username = 'Username can only contain letters, numbers, and underscores'
-    }
-
-    // Password validation
-    if (!password) {
-      errors.password = 'Password is required'
-    } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters'
-    }
-
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setUsername(value)
-    // Clear username error when user starts typing
-    if (validationErrors.username) {
-      setValidationErrors({ ...validationErrors, username: undefined })
-    }
-  }
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setPassword(value)
-    // Clear password error when user starts typing
-    if (validationErrors.password) {
-      setValidationErrors({ ...validationErrors, password: undefined })
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    
-    // Validate form before submission
-    if (!validateForm()) {
-      return
-    }
-
     setLoading(true)
 
     try {
@@ -96,13 +40,12 @@ const LoginPage: React.FC = () => {
               type="text"
               id="username"
               value={username}
-              onChange={handleUsernameChange}
-              className={validationErrors.username ? 'input-error' : ''}
+              //...
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              //...
               placeholder="Enter your username"
             />
-            {validationErrors.username && (
-              <span className="validation-error">{validationErrors.username}</span>
-            )}
           </div>
           <div className="form-group">
             <label htmlFor="password">Password</label>
@@ -110,13 +53,10 @@ const LoginPage: React.FC = () => {
               type="password"
               id="password"
               value={password}
-              onChange={handlePasswordChange}
-              className={validationErrors.password ? 'input-error' : ''}
+              onChange={(e) => setPassword(e.target.value)}
+              required
               placeholder="Enter your password"
             />
-            {validationErrors.password && (
-              <span className="validation-error">{validationErrors.password}</span>
-            )}
           </div>
           {error && <div className="error-message">{error}</div>}
           <button type="submit" className="login-button" disabled={loading}>

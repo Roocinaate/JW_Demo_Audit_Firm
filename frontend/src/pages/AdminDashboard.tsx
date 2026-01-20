@@ -32,7 +32,6 @@ const AdminDashboard: React.FC = () => {
     department: '',
     phone: '',
   })
-  const [formErrors, setFormErrors] = useState<{[key: string]: string}>({})
 
   useEffect(() => {
     fetchUsers()
@@ -88,78 +87,11 @@ const AdminDashboard: React.FC = () => {
       department: '',
       phone: '',
     })
-    setFormErrors({})
     setShowModal(true)
-  }
-
-  // Validation function
-  const validateForm = (): boolean => {
-    const errors: {[key: string]: string} = {}
-
-    // Username validation
-    if (!formData.username.trim()) {
-      errors.username = 'Username is required'
-    } else if (formData.username.length < 3) {
-      errors.username = 'Username must be at least 3 characters'
-    } else if (formData.username.length > 50) {
-      errors.username = 'Username must be less than 50 characters'
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      errors.username = 'Username can only contain letters, numbers, and underscores'
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!formData.email.trim()) {
-      errors.email = 'Email is required'
-    } else if (!emailRegex.test(formData.email)) {
-      errors.email = 'Please enter a valid email address'
-    }
-
-    // Password validation (only required when creating new user)
-    if (!editingUser) {
-      if (!formData.password) {
-        errors.password = 'Password is required'
-      } else if (formData.password.length < 6) {
-        errors.password = 'Password must be at least 6 characters'
-      }
-    } else if (formData.password && formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters'
-    }
-
-    // Full Name validation
-    if (!formData.fullName.trim()) {
-      errors.fullName = 'Full name is required'
-    } else if (formData.fullName.length < 2) {
-      errors.fullName = 'Full name must be at least 2 characters'
-    } else if (formData.fullName.length > 100) {
-      errors.fullName = 'Full name must be less than 100 characters'
-    }
-
-    // Phone validation (optional but must be valid if provided)
-    if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
-      errors.phone = 'Please enter a valid phone number'
-    }
-
-    setFormErrors(errors)
-    return Object.keys(errors).length === 0
-  }
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value })
-    // Clear error for this field when user starts typing
-    if (formErrors[field]) {
-      setFormErrors({ ...formErrors, [field]: '' })
-    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Validate form before submission
-    if (!validateForm()) {
-      return
-    }
-
     try {
       if (editingUser) {
         await axios.put(`http://localhost:8080/api/admin/users/${editingUser.id}`, formData)
@@ -167,7 +99,6 @@ const AdminDashboard: React.FC = () => {
         await axios.post('http://localhost:8080/api/admin/users', formData)
       }
       setShowModal(false)
-      setFormErrors({})
       fetchUsers()
     } catch (error: any) {
       alert(error.response?.data?.message || 'Error saving user')
@@ -264,54 +195,45 @@ const AdminDashboard: React.FC = () => {
                   <input
                     type="text"
                     value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
-                    className={formErrors.username ? 'input-error' : ''}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    required
                   />
-                  {formErrors.username && (
-                    <span className="validation-error">{formErrors.username}</span>
-                  )}
                 </div>
                 <div className="form-group">
                   <label>Email *</label>
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={formErrors.email ? 'input-error' : ''}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
                   />
-                  {formErrors.email && (
-                    <span className="validation-error">{formErrors.email}</span>
-                  )}
                 </div>
                 <div className="form-group">
                   <label>Password {!editingUser && '*'}</label>
                   <input
                     type="password"
                     value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    className={formErrors.password ? 'input-error' : ''}
+                    //.....
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required={!editingUser}
+                    ///...
                   />
-                  {formErrors.password && (
-                    <span className="validation-error">{formErrors.password}</span>
-                  )}
                 </div>
                 <div className="form-group">
                   <label>Full Name *</label>
                   <input
                     type="text"
                     value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    className={formErrors.fullName ? 'input-error' : ''}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    required
                   />
-                  {formErrors.fullName && (
-                    <span className="validation-error">{formErrors.fullName}</span>
-                  )}
                 </div>
                 <div className="form-group">
                   <label>Role *</label>
                   <select
                     value={formData.role}
-                    onChange={(e) => handleInputChange('role', e.target.value)}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    required
                   >
                     <option value="USER">USER</option>
                     <option value="ADMIN">ADMIN</option>
@@ -322,7 +244,7 @@ const AdminDashboard: React.FC = () => {
                   <input
                     type="text"
                     value={formData.position}
-                    onChange={(e) => handleInputChange('position', e.target.value)}
+                    onChange={(e) => setFormData({ ...formData, position: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
@@ -330,7 +252,7 @@ const AdminDashboard: React.FC = () => {
                   <input
                     type="text"
                     value={formData.department}
-                    onChange={(e) => handleInputChange('department', e.target.value)}
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                   />
                 </div>
                 <div className="form-group">
@@ -338,13 +260,8 @@ const AdminDashboard: React.FC = () => {
                   <input
                     type="text"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={formErrors.phone ? 'input-error' : ''}
-                    placeholder="e.g., 123-456-7890"
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   />
-                  {formErrors.phone && (
-                    <span className="validation-error">{formErrors.phone}</span>
-                  )}
                 </div>
                 <div className="modal-actions">
                   <button type="button" onClick={() => setShowModal(false)} className="cancel-button">
